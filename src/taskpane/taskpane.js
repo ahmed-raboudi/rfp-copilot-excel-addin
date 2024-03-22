@@ -8,26 +8,40 @@ let selectedChat = null;
 var listChats = []
 
 let answerLoadingContainer = document.getElementById("answer-loading-container")
+let appBody =  document.getElementById("app-body")
+let rfpBody =  document.getElementById("rfp-body")
+let promptTextArea = document.getElementById("prompt-txt")
+let answerCard = document.getElementById("answer-card")
+let answerContainer = document.getElementById("answer-container")
+let insertBtn = document.getElementById("insert-btn")
+let answerCmdBar =  document.getElementById("answer-cmd-bar")
 
+let questionCard =  document.getElementById("question-card")
+let questionContainer =  document.getElementById("question-container")
 
 Office.onReady(async (info) => {
   if (info.host === Office.HostType.Excel) {
     document.getElementById("sideload-msg").style.display = "none";
     document.getElementById("back-btn").onclick = () => {
       // Reset UI to list RFP
-      document.getElementById("app-body").style.display = "flex";
-      document.getElementById("rfp-body").style.display = "none";
+      appBody.style.display = "flex";
+      rfpBody.style.display = "none";
       selectedChat = null;
-      document.getElementById("prompt-txt").value = ""
+      promptTextArea.value = ""
+      answerContainer.innerHTML = "I can help answer RFP technical questions. Have a try here !"
+      answerCmdBar.style.display = "none"
+      questionCard.style.display = "none"
     }
     // PROMPT Click
     document.getElementById("prompt-send-btn").onclick = async () => {
       let promptTextArea = document.getElementById("prompt-txt")
       let promptText = promptTextArea.value
-      let answerContainer = document.getElementById("answer-container")
+      // display question
+      questionCard.style.display = "block"
+      answerCard.style.display = "none"
+      questionContainer.innerHTML = promptText
       answerLoadingContainer.style.display = "block"
       answerLoadingContainer.innerHTML = "Working on a response for you..."
-      answerContainer.innerHTML = promptText
       promptTextArea.value = ""
       let promptPayload = {
         "input": promptText,
@@ -54,14 +68,14 @@ Office.onReady(async (info) => {
       const content = await res.json();
       if(content.value){
         answerContainer.innerHTML = content.value
-        let insertBtn = document.getElementById("insert-btn")
         insertBtn.setAttribute("data-text",content.value)
-        document.getElementById("answer-cmd-bar").style.display = "flex"
+        answerCard.style.display = "block"
+        answerCmdBar.style.display = "flex"
       }
       answerLoadingContainer.style.display = "none"
     }
 
-    document.getElementById("insert-btn").onclick = async (e) => {
+    insertBtn.onclick = async (e) => {
       let data = e.currentTarget.attributes["data-text"].value
       await Excel.run(async (context) => {
         const range = context.workbook.getSelectedRange();
